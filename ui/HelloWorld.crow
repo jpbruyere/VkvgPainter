@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Window Caption="HELLO WORLD" Background="DarkGrey" Width="200" Height="500" Left="5" Top="5">
+	<VerticalStack Margin="1" Spacing="2">
+		<EnumSelector RadioButtonStyle="DrawModeStyle" EnumValue="{²CurrentDrawMode}" Width="Stretched">
+			<Template>
+				<Wrapper Name="Content"/>
+			</Template>
+		</EnumSelector>
+		<VerticalStack RootDataLevel="true" Height="Fit" DataSource="{CurrentShape}">
+			<Label Text="{}" Background="Blue" MinimumSize="20,0"/>
+			<CheckBox Caption="Closed" IsChecked="{²Closed}"/>
+			<Label Text="{LineWidth}"/>
+			<Slider Height="10" Minimum="1" Maximum="150" SmallIncrement="1" LargeIncrement="5" Value="{²LineWidth}" Width="Stretched"/>
+			<Popper Template="#ui.ColorPopper.template" Caption="Fill" Foreground="{²FillColor}">
+				<ColorPicker CurrentColor="{²../Foreground}" Background="Jet" Width="200" Height="Fit" BubbleEvents="none" />
+			</Popper>
+			<Popper Template="#ui.ColorPopper.template" Caption="Stroke" Foreground="{²StrokeColor}" BubbleEvents="none">
+				<ColorPicker CurrentColor="{²../Foreground}" Background="Jet" Width="200" Height="Fit" />
+			</Popper>
+			<EnumSelector RadioButtonStyle="DrawModeStyle" IconsPrefix="#Icons.LineJoin" Height="Fit" Caption="Line Join" EnumValue="{²LineJoin}">
+				<Template>
+					<HorizontalStack>
+						<Label Text="{./Caption}" Width="Stretched" Margin="2"/>
+						<HorizontalStack Width="Fit" Name="Content" Margin="2" Background="Onyx"/>
+					</HorizontalStack>
+				</Template>
+			</EnumSelector>
+			<EnumSelector RadioButtonStyle="DrawModeStyle" IconsPrefix="#Icons.LineCap" Height="Fit" Caption="Line Cap" EnumValue="{²LineCap}">
+				<Template>
+					<HorizontalStack>
+						<Label Text="{./Caption}" Width="Stretched" Margin="2"/>
+						<HorizontalStack Width="Fit" Name="Content" Margin="2" Background="Onyx"/>
+					</HorizontalStack>
+				</Template>
+			</EnumSelector>
+			<CheckBox Caption="Enable Dashes" IsChecked="{²EnableDash}"/>
+			<ListBox Data="{Dashes}" Width="Stretched" Height="100">
+				<ItemTemplate>
+					<HorizontalStack Height="Fit" Background="Jet">
+						<Label Text="{Value}" Foreground="Black" Background="Grey"/>
+						<Slider Height="10" SmallIncrement="0.1" LargeIncrement="1" Background="Transparent" Foreground="Black" Width="Stretched" Maximum="500" Value="{²Value}"/>
+					</HorizontalStack>
+				</ItemTemplate>
+			</ListBox>
+		</VerticalStack>
+		<Slider Template="#ui.Slider.template" Height="Fit" Background="0.1,0.1,0.2"
+			Maximum="100" SmallIncrement="1" LargeIncrement="10"
+			Caption="Crow (gui) Update Interval (ms)" Value="{²CrowUpdateInterval}" />
+		<Slider Template="#ui.Slider.template" Height="Fit" Background="0.1,0.1,0.2"
+			Maximum="100" SmallIncrement="1" LargeIncrement="10"
+			Caption="Vke (vulkan) Update Interval (ms)" Value="{²VkeUpdateInterval}" />
+	</VerticalStack>
+</Window>
