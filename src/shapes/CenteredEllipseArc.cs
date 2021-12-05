@@ -34,7 +34,7 @@ namespace VkvgPainter
 			}*/
 		}
 		public double StartAngle {
-			get => Points.Count > 3 ? getAngle (Points[0], Points[3]) : 0;
+			get => Points.Count > 3 ? getAngle (Points[0], Points[3]): 0;
 			/*set {
 				if (Points.Count < 2 || value == StartAngle)
 					return;
@@ -45,7 +45,7 @@ namespace VkvgPainter
 			}*/
 		}
 		public double EndAngle {
-			get => Points.Count > 4 ? getAngle (Points[0], Points[4]) : Math.PI * 2.0;
+			get => Points.Count > 4 ? getAngle (Points[0], Points[4]): Math.PI * 2.0;
 			/*set {
 				if (Points.Count < 3 || value == EndAngle)
 					return;
@@ -82,25 +82,44 @@ namespace VkvgPainter
 		public override void DrawPoints(Context ctx)
 		{
 			base.DrawPoints(ctx);
-			ctx.DrawCross (x1.ToPointD(), 1,0,0);
-			ctx.DrawCross (x2.ToPointD(), 0,2,0);
-			PointD p = center.ToPointD () + 10;
+			ctx.DrawCross (x1.ToPointD(), 1,0,0, 6, 2);
+			ctx.DrawCross (x2.ToPointD(), 0,1,0, 6, 2);
+
+			ctx.SetSource (0.0,0.0,0.0,0.5);
+			ctx.LineWidth = 1;
+			PointD p = center.ToPointD ();
+			if (Points.Count>3) {
+				ctx.MoveTo (p);
+				ctx.LineTo (p.X + Min (radii.X, radii.Y), p.Y);
+				ctx.MoveTo (p);
+				ctx.LineTo (Points[3]);
+				if (Points.Count>4) {
+					ctx.MoveTo (p);
+					ctx.LineTo (Points[4]);
+				}
+				ctx.Stroke();
+
+			}
+
+			ctx.Arc (p.X, p.Y, Min (radii.X, radii.Y), 0, PI * 2);
+			ctx.Stroke ();
+			p += 10;
 			ctx.SetSource (0.1,0.0,1.0);
 			ctx.FontSize = 8;
 			ctx.MoveTo (p);
 			ctx.ShowText (largeArc ? "large arc" : "small arc");
 			p.Y += 15;
 			ctx.MoveTo (p);
-			ctx.ShowText (clockWise ? "clockwise" : "counter clockwise");
+			ctx.ShowText (counterClockWise ? "counter clockwise" : "clockwise");
 
 			ctx.SetSource (1,0.1,0.0,0.4);
 			ctx.LineWidth = 10;
-			ctx.DrawEllipticArc (x1.ToPointD(), x2.ToPointD(), largeArc, clockWise, radii, Phi);
+			ctx.DrawEllipticArc (x1.ToPointD(), x2.ToPointD(), largeArc, counterClockWise, radii, Phi);
 			ctx.Stroke ();
 		}
 		Vector2d center, x1, x2;
 		PointD radii;
-		bool largeArc, clockWise;
+		bool largeArc, counterClockWise;
 		Matrix2d matPhiEllipsPoint;
 		public override void EmitPath(Context ctx, PointD? mouse = null)
 		{
@@ -116,8 +135,8 @@ namespace VkvgPainter
 				return;
 			}
 			double phi = Points.Count == 2 && mouse.HasValue ? getAngle (Points[0], mouse.Value) : Phi;
-			double sa = (Points.Count == 3  && mouse.HasValue ? getAngle (Points[0], mouse.Value) : StartAngle) - phi;
-			double ea = (Points.Count == 4  && mouse.HasValue ? getAngle (Points[0], mouse.Value) : EndAngle) - phi;
+			double sa = (Points.Count == 3  && mouse.HasValue ? getAngle (Points[0], mouse.Value) : StartAngle);
+			double ea = (Points.Count == 4  && mouse.HasValue ? getAngle (Points[0], mouse.Value) : EndAngle);
 
 			matPhiEllipsPoint = new Matrix2d (
 				Cos (phi),-Sin (phi),
@@ -136,9 +155,9 @@ namespace VkvgPainter
 											radii.Y * Sin(ea))
 					+ center;
 			largeArc = delta_theta > Math.PI;
-			clockWise = delta_theta > 0;
+			counterClockWise = delta_theta > 0;
 
-			Console.WriteLine ($"CE:{sa*Extensions.radToDg,8:0.0}{ea*Extensions.radToDg,8:0.0}{delta_theta*Extensions.radToDg,8:0.0}");
+			Console.WriteLine ($"centered:{phi*Extensions.radToDg,8:0.0}{sa*Extensions.radToDg,8:0.0}{ea*Extensions.radToDg,8:0.0}{delta_theta*Extensions.radToDg,8:0.0}");
 
 			/*if (Points.Count > 3) {
 				Points[3] = x1.ToPointD();
@@ -151,13 +170,13 @@ namespace VkvgPainter
 			List<PointD> pts = new List<PointD> (1000);
 			double step = 0.1;
 
-			if (clockWise) {
+			if (counterClockWise) {
 				while (theta < ea) {
 					p = new Vector2d (
 						radii.X * Cos(theta),
 						radii.Y * Sin(theta)
 					);
-					Vector2d xy = (matPhiEllipsPoint * p) + center;
+					Vector2d xy = matPhiEllipsPoint * p + center;
 					pts.Add (new PointD(xy.X, xy.Y));
 					theta += step;
 				}
@@ -167,7 +186,7 @@ namespace VkvgPainter
 						radii.X * Cos(theta),
 						radii.Y * Sin(theta)
 					);
-					Vector2d xy = (matPhiEllipsPoint * p) + center;
+					Vector2d xy = matPhiEllipsPoint * p + center;
 					pts.Add (new PointD(xy.X, xy.Y));
 					theta -= step;
 				}
@@ -193,13 +212,19 @@ namespace VkvgPainter
 					Points[4] = pts[pts.Count-1];
 			}*/
 		}
-		double getAngle (PointD c, PointD p) {
+		/*double getAngle (PointD c, PointD p) {
 			PointD v = p - c;
 			v = v.Normalized;
 			if (v.Y < 0)
 				return -Math.Acos (v.X);
 			else
 				return Math.Acos (v.X);
+		}*/
+		double getAngle (PointD c, PointD p) {
+			Vector2d u = Vector2d.UnitX;
+			Vector2d v = new Vector2d (p.X-c.X, p.Y-c.Y).Normalized();
+			double sa = Acos (Vector2d.Dot (u, v));
+			return (u.X*v.Y-u.Y*v.X < 0) ? -sa : sa;
 		}
 
 		public override bool OnCreateMouseDown(MouseButton button, PointD m)

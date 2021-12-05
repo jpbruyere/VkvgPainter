@@ -34,10 +34,10 @@ namespace VkvgPainter
 			ctx.LineTo (p.X + size, p.Y);
 			ctx.Stroke ();
 		}
-		public static void DrawEllipticArc (this vkvg.Context ctx, PointD x1, PointD x2, bool largeArc, bool clockWise, PointD radii, double phi)
-			=> ctx.DrawEllipticArc (x1.X, x1.Y, x2.X, x2.Y, largeArc, clockWise, radii.X, radii.Y,phi);
+		public static void DrawEllipticArc (this vkvg.Context ctx, PointD x1, PointD x2, bool largeArc, bool counterClockWise, PointD radii, double phi)
+			=> ctx.DrawEllipticArc (x1.X, x1.Y, x2.X, x2.Y, largeArc, counterClockWise, radii.X, radii.Y,phi);
 		public static void DrawEllipticArc (this vkvg.Context ctx, double x1, double y1, double x2, double y2,
-				bool largeArc, bool clockWise, double rx, double ry, double phi) {
+				bool largeArc, bool counterClockWise, double rx, double ry, double phi) {
 			Matrix2d m = new Matrix2d (
 				 Cos (phi), Sin (phi),
 				-Sin (phi), Cos (phi)
@@ -58,7 +58,7 @@ namespace VkvgPainter
 				(Pow (rx,2) * Pow (ry,2) - Pow (rx,2) * Pow (p1.Y, 2) - Pow (ry,2) * Pow (p1.X, 2)) /
 				(Pow (rx,2) * Pow (p1.Y, 2) + Pow (ry,2) * Pow (p1.X, 2))
 			)) * p;
-			if (largeArc == clockWise)
+			if (largeArc == counterClockWise)
 				cp = -cp;
 
 			m = new Matrix2d (
@@ -79,7 +79,7 @@ namespace VkvgPainter
 			double delta_theta = Acos (Vector2d.Dot (u, v) / (v.Length * u.Length));
 			if (u.X*v.Y-u.Y*v.X < 0)
 				delta_theta = -delta_theta;
-			if (clockWise) {
+			if (counterClockWise) {
 				if (delta_theta < 0)
 					delta_theta += PI * 2.0;
 			} else if (delta_theta > 0)
@@ -95,7 +95,7 @@ namespace VkvgPainter
 			double step = 0.1f;
 
 
-			Console.WriteLine ($"EA:{sa*radToDg,8:0.0}{ea*radToDg,8:0.0}{delta_theta*radToDg,8:0.0}");
+			Console.WriteLine ($"fromx1x2:{phi*Extensions.radToDg,8:0.0}{sa*radToDg,8:0.0}{ea*radToDg,8:0.0}{delta_theta*radToDg,8:0.0}");
 
 			List<PointD> pts = new List<PointD> (1000);
 			Vector2d pT = default;
@@ -241,5 +241,9 @@ namespace VkvgPainter
 			}
 			ctx.ClosePath ();
 		}
+		public static void MoveTo (this vkvg.Context ctx, PointD p) => ctx.MoveTo (p.X, p.Y);
+		public static void LineTo (this vkvg.Context ctx, PointD p) => ctx.LineTo (p.X, p.Y);
+		public static void CurveTo (this vkvg.Context ctx, PointD cp1, PointD cp2, PointD p)
+			=> ctx.CurveTo (cp1.X, cp1.Y, cp2.X, cp2.Y, p.X, p.Y);
 	}
 }

@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Window Caption="Elliptic Arc" Background="DarkGrey" Width="200" Height="Fit" HorizontalAlignment="Right" VerticalAlignment="Top" >
+	<VerticalStack Margin="1" Spacing="2">
+		<HorizontalStack Height="Fit" Width="Stretched">
+			<Label Width="40%" Text="Radii"/>
+			<TextBox Text="{²Radii}"/>
+		</HorizontalStack>
+		<HorizontalStack Height="Fit" Width="Stretched">
+			<Label Width="40%" Text="Start"/>
+			<TextBox Text="{²Start}"/>
+		</HorizontalStack>
+		<HorizontalStack Height="Fit" Width="Stretched">
+			<Label Width="40%" Text="End"/>
+			<TextBox Text="{²End}"/>
+		</HorizontalStack>
+		<CheckBox Caption="Large Arc" IsChecked="{²LargeArc}"/>
+		<CheckBox Caption="Sweep Flag" IsChecked="{²Clockwise}"/>
+		<HorizontalStack Height="Fit" Width="Stretched">
+			<Label Width="40%" Text="Phi"/>
+			<TextBox Text="{²Angle}"/>
+		</HorizontalStack>
+	</VerticalStack>
+</Window>

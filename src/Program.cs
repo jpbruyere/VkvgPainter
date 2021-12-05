@@ -13,6 +13,7 @@ namespace VkvgPainter
 		Select,
 		Lines,
 		Bezier,
+		Quadratic,
 		Rect,
 		Circle,
 		Ellipse,
@@ -31,7 +32,27 @@ namespace VkvgPainter
 		DrawMode currentDrawMode = DrawMode.Select;
 		Drawable currentShape, lastCurrentShape, hoverShape;
 		Shape newShape;
+		public static float[][] PredefinedDashes = new float[][] {
+			null,
+			new float[] {10,4},
+			new float[] {5,2},
+			new float[] {0,3}
+		};
 
+		public uint LineWidth {
+			get => currentShape == null ? Crow.Configuration.Global.Get ("LineWidth", 1u) : currentShape.LineWidth;
+			set {
+				if (LineWidth == value)
+					return;
+				Crow.Configuration.Global.Set ("LineWidth", value);
+				if (currentShape != null)
+					currentShape.LineWidth = value;
+			}
+		}
+		public LineJoin LineJoin { get; set; }
+		public LineCap LineCap { get; set; }
+		public Drawing2D.Color FillColor { get; set; }
+		public Drawing2D.Color StrokeColor { get; set; }
 		public Drawable CurrentShape {
 			get => currentShape;
 			set {
@@ -136,7 +157,7 @@ namespace VkvgPainter
 			}
 		}
 		PointD? mousePos;
-		bool redraw = true;
+		internal static volatile bool redraw = true;
 
 		protected override void onMouseButtonDown(MouseButton button)
 		{
@@ -170,12 +191,22 @@ namespace VkvgPainter
 						case DrawMode.Bezier:
 							newShape = new Bezier (mousePos.Value);
 							break;
+						case DrawMode.Quadratic:
+							//newShape = new Quadratic (mousePos.Value);
+							Quadratic q = new Quadratic (new PointD (100,250));
+							q.AddPoint (new PointD (250,100));
+							q.AddPoint (new PointD (400,250));
+							Shapes.Add (q);
+							break;
 						case DrawMode.EllipticalArc:
 							/*EllipticalArc ea = new EllipticalArc (mousePos.Value);
 							ea.AddPoint (mousePos.Value + new PointD (100,10));
 							ea.AddPoint (mousePos.Value + new PointD (30,40));
 							Shapes.Add (ea);*/
-							newShape = new CenteredEllipseArc (mousePos.Value);
+							//newShape = new CenteredEllipseArc (mousePos.Value);
+							EllipticalArc ea = new EllipticalArc (mousePos.Value);
+							Shapes.Add (ea);
+							loadWindow ("#ui.EllipticArc.crow").DataSource = ea;
 							break;
 					}
 				} else if (newShape.OnCreateMouseDown (button, mousePos.Value))

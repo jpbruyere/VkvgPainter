@@ -52,6 +52,19 @@ namespace VkvgPainter
 			else
 				return Math.Acos (v.X);
 		}
+		public override void DrawPoints(Context ctx)
+		{
+			base.DrawPoints(ctx);
+			if (Points.Count == 3) {
+				double sa = getAngle (Points[0], Points[1]);
+				double ea = getAngle (Points[0], Points[2]);
+				ctx.SetSource (0,0,1);
+				ctx.MoveTo (Points[1] + (Points[1] - Points[0]).Normalized * 10);
+				ctx.ShowText ($"a1={sa*Extensions.radToDg:0.00}°");
+				ctx.MoveTo (Points[2] + (Points[2] - Points[0]).Normalized * 10);
+				ctx.ShowText ($"a2={ea*Extensions.radToDg:0.00}°");
+			}
+		}
 
 		public override void EmitPath(Context ctx, PointD? mouse = null)
 		{
