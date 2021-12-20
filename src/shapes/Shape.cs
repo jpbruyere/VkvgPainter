@@ -32,6 +32,7 @@ namespace VkvgPainter
 				if (value == lineWidth)
 					return;
 				lineWidth = value;
+				Program.redraw = true;
 				NotifyValueChanged (lineWidth);
 			}
 		}
@@ -41,6 +42,7 @@ namespace VkvgPainter
 				if (value == lineJoin)
 					return;
 				lineJoin = value;
+				Program.redraw = true;
 				NotifyValueChanged (lineJoin);
 			}
 		}
@@ -50,6 +52,7 @@ namespace VkvgPainter
 				if (value == lineCap)
 					return;
 				lineCap = value;
+				Program.redraw = true;
 				NotifyValueChanged (lineCap);
 			}
 		}
@@ -59,6 +62,7 @@ namespace VkvgPainter
 				if (value == fillColor)
 					return;
 				fillColor = value;
+				Program.redraw = true;
 				NotifyValueChanged (fillColor);
 			}
 		}
@@ -68,6 +72,7 @@ namespace VkvgPainter
 				if (value == strokeColor)
 					return;
 				strokeColor = value;
+				Program.redraw = true;
 				NotifyValueChanged (strokeColor);
 			}
 		}
@@ -78,6 +83,7 @@ namespace VkvgPainter
 				if (value == enableDash)
 					return;
 				enableDash = value;
+				Program.redraw = true;
 				NotifyValueChanged (enableDash);
 			}
 		}
@@ -86,6 +92,7 @@ namespace VkvgPainter
 				if (dashes == value)
 					return;
 				dashes = value;
+				Program.redraw = true;
 				NotifyValueChanged (dashes);
 			}
 			get => dashes;

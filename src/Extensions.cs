@@ -14,6 +14,8 @@ namespace VkvgPainter
 		public static double radToDg = 180.0 / PI;
 		public static PointD ToPointD (this Vector2d v) => new PointD (v.X, v.Y);
 		public static Vector2d ToVector2d (this PointD v) => new Vector2d (v.X, v.Y);
+		public static double Det (this Vector2d a, Vector2d b) => a.X * b.Y - a.Y * b.X;
+		public static Vector2d Perp (this Vector2d a) => new Vector2d (a.Y, -a.X);
 		public static void SetAsSource (this Fill f, vkvg.Context ctx, Rectangle bounds = default (Rectangle)) {
 			if (f is SolidColor sc)
 				sc.SetAsSource (ctx, bounds);
@@ -71,12 +73,16 @@ namespace VkvgPainter
 			Vector2d u = Vector2d.UnitX;
 			Vector2d v = new Vector2d ((p1.X-cp.X)/rx, (p1.Y-cp.Y)/ry);
 			double sa = Acos (Vector2d.Dot (u, v) / (v.Length * u.Length));
+			if (double.IsNaN(sa))
+				sa = PI;
 			if (u.X*v.Y-u.Y*v.X < 0)
 				sa = -sa;
 
 			u = v;
 			v = new Vector2d ((-p1.X-cp.X)/rx, (-p1.Y-cp.Y)/ry);
 			double delta_theta = Acos (Vector2d.Dot (u, v) / (v.Length * u.Length));
+			if (double.IsNaN(delta_theta))
+				delta_theta = PI;
 			if (u.X*v.Y-u.Y*v.X < 0)
 				delta_theta = -delta_theta;
 			if (counterClockWise) {

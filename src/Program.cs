@@ -12,6 +12,7 @@ namespace VkvgPainter
 	{
 		Select,
 		Lines,
+		PathTest,
 		Bezier,
 		Quadratic,
 		Rect,
@@ -188,6 +189,9 @@ namespace VkvgPainter
 						case DrawMode.Lines:
 							newShape = new Path (mousePos.Value);
 							break;
+						case DrawMode.PathTest:
+							newShape = new PathTest (mousePos.Value);
+							break;
 						case DrawMode.Bezier:
 							newShape = new Bezier (mousePos.Value);
 							break;
@@ -259,6 +263,11 @@ namespace VkvgPainter
 				} else if (this.GetButton (MouseButton.Right) == InputAction.Press) {
 				}else {
 					using (vkvg.Context ctx = new vkvg.Context(vkvgSurf)) {
+						if (hoverShape != null && hoverShape.Contains (ctx, mousePos.Value)) {
+							HoverShape.HasHoverPoint (mousePos.Value);
+							redraw = true;
+							return;
+						}
 						Shape hs = null;
 						foreach (Shape shape in ShapesInReverseOrder) {
 							if (shape.Contains (ctx, mousePos.Value)) {
@@ -293,6 +302,11 @@ namespace VkvgPainter
 				base.onKeyDown(key, scanCode, modifiers);
 				break;
 			}
+		}
+		protected override void OnResize()
+		{
+			base.OnResize();
+			redraw = true;
 		}
 	}
 }

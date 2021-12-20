@@ -78,7 +78,11 @@ namespace VkvgPainter
 		}
 		public override void Move(PointD delta)
 		{
-			base.Move(delta);
+			if (selectedPoint < 0) {
+				for (int i = 0; i < Points.Count-1; i++)
+					Points[i] += delta;
+			} else
+				Points[selectedPoint] += delta;
 			switch (selectedPoint) {
 				case 0:
 					NotifyValueChanged ("Start", Points[0]);
@@ -91,9 +95,9 @@ namespace VkvgPainter
 					break;
 			}
 		}
-		public EllipticalArc(PointD position) : base(position)	{
-			AddPoint (position + new PointD(200,0));
-			AddPoint (new PointD(14,10));
+		public EllipticalArc(PointD position) : base(new PointD(210,100))	{
+			AddPoint (new PointD(210,100) + new PointD(50,-50));
+			AddPoint (new PointD(20,40));
 		}
 
 		public override void EmitPath(Context ctx, PointD? mouse = null)
