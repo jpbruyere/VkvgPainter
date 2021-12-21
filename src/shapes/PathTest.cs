@@ -94,78 +94,89 @@ namespace VkvgPainter
 				double alpha = Acos (dot);
 				if (det<0)
 					alpha = -alpha;
-				bisec_n = bisec_n.Perp();
-				double hAlpha = alpha / 2.0;
-				double lh = hw / Cos(hAlpha);
+				Vector2d bisec_n_perp = bisec_n.Perp();
+				double halfAlpha = alpha / 2.0;
+				double lh = hw / Cos(halfAlpha);
 
-				bool reducedLH = (dot == -1) || (lh > Min (lh, Min (v0.Length, v1.Length)));
+				double rlh = lh;
+				if (dot < 0.0)
+					rlh =  Min (lh, Min (v0.Length, v1.Length));
 
-				double rlh = Min (lh, Min (v0.Length, v1.Length));
+				Vector2d bisec = bisec_n_perp * rlh;
 
-				double beta = (PI / 2.0) - Abs(hAlpha);
-				double x = (lh - rlh) * Cos(hAlpha);
+				Vector2d rlh_inside_pos,rlh_outside_pos;
+				Vector2d vnPerp;
+				if (v0.Length < v1.Length)
+					vnPerp = v1n.Perp();
+				else
+					vnPerp = v0n.Perp();
+				Vector2d vHwPerp = vnPerp * hw;
+				double lbc = Cos(halfAlpha) * rlh;
 
-				double lbc = Cos(hAlpha) * rlh;
-				Vector2d plbc = v0n.Perp() * -lbc;
-
-				Vector2d bisec = bisec_n * rlh;
-				Vector2d p = default;
-
-				/*if (dot < 0 && reducedLH && det < 0) {
-					if (v0.Length < v1.Length)
-						p = v1n.Perp() * hw;
-					else
-						p = - v1n.Perp() * hw;
-				} else*/
-
-				p = bisec;
-				if (det > 0 && x != 0) {
-					Vector2d bisecPerp = bisec_n.Perp () * x;
-					vertices.Add ((b+p+bisecPerp).ToPointD());
-					vertices.Add ((b+p-bisecPerp).ToPointD());
-				} else if (lbc < hw) {
-					Vector2d pv0 = (b + p) + plbc;
-					vertices.Add ((pv0+v0n.Perp()*hw).ToPointD());
+				if (det < 0.0) {
+					if (rlh < lh) {
+						rlh_inside_pos = vnPerp * -lbc + b + bisec + vHwPerp;
+						rlh_outside_pos = b-bisec_n_perp*lh;
+					} else {
+						rlh_inside_pos = b+bisec;
+						rlh_outside_pos = b-bisec;
+					}
 				} else {
-					vertices.Add ((b+p).ToPointD());
+					if (rlh < lh) {
+						rlh_inside_pos = vnPerp * lbc + b - bisec - vHwPerp;
+						rlh_outside_pos = b+bisec_n_perp*lh;
+					} else {
+						rlh_inside_pos = b-bisec;
+						rlh_outside_pos = b+bisec;
+					}
 				}
 
-				/*if (dot < 0 && reducedLH && det > 0) {
-					if (v0.Length < v1.Length)
-						p = - v1n.Perp() * hw;
-					else
-						p = v1n.Perp() * hw;
-				} else*/
-				p = - bisec;
-				if (det < 0 && x != 0) {
-					Vector2d bisecPerp = bisec_n.Perp () * x;
-					vertices.Add ((b+p+bisecPerp).ToPointD());
-					vertices.Add ((b+p-bisecPerp).ToPointD());
-				} else if (lbc < hw) {
-					Vector2d pv0 = (b + p) - plbc;
-					vertices.Add ((pv0-v0n.Perp()*hw).ToPointD());
-				} else {
-					vertices.Add ((b+p).ToPointD());
-				}
+				double x = (lh - rlh) * Cos(halfAlpha);
 
-				if (rlh < lh) {
-					if (det<0)
+				if (dot < -0.96 && rlh < lh) {
+					Vector2d bisecPerp = bisec_n * x;
+					if (det < 0.0) {
+						Vector2d p = b - bisec;
+
+						vertices.Add (rlh_inside_pos.ToPointD());
+						vertices.Add ((p-bisecPerp).ToPointD());
+						vertices.Add ((p+bisecPerp).ToPointD());
+
 						indices.AddRange (new int[] {ib+0,ib+2,ib+1,ib+2,ib+4,ib+0,ib+0,ib+3,ib+4});
-					else
+					} else {
+						Vector2d p = b + bisec;
+
+						vertices.Add ((p-bisecPerp).ToPointD());
+						vertices.Add (rlh_inside_pos.ToPointD());
+						vertices.Add ((p+bisecPerp).ToPointD());
+
 						indices.AddRange (new int[] {ib+0,ib+2,ib+1,ib+2,ib+3,ib+1,ib+1,ib+3,ib+4});
-				} else
-					indices.AddRange (new int[] {ib+0,ib+2,ib+1,ib+1,ib+2,ib+3});
+					}
+				} else {
+					if (det < 0.0) {
+						vertices.Add (rlh_inside_pos.ToPointD());
+						vertices.Add (rlh_outside_pos.ToPointD());
+						indices.AddRange (new int[] {ib+0,ib+2,ib+3,ib+1,ib+0,ib+3});
+					} else {
+						vertices.Add (rlh_outside_pos.ToPointD());
+						vertices.Add (rlh_inside_pos.ToPointD());
+						/*if (v0.Length < v1.Length)
+							indices.AddRange (new int[] {ib+0,ib+2,ib+3,ib+1,ib+0,ib+3});
+						else*/
+							indices.AddRange (new int[] {ib+0,ib+2,ib+1,ib+1,ib+2,ib+3});
+					}
+				}
 
 				ib = vertices.Count;
 
-				PointD lp = p.ToPointD() * 1.5;
+				PointD lp = det<0 ? (bisec.ToPointD() * -1.5) : (bisec.ToPointD() * 1.5);
 				ctx.SetSource (0,0.4,0);
 				ctx.MoveTo (Points[i+1] + lp);
 				ctx.ShowText ($"dot:{dot:0.0000}");
 				ctx.MoveTo (Points[i+1] + lp + labelSpace);
 				ctx.ShowText ($"det:{det:0.0000}");
 				ctx.MoveTo (Points[i+1] + lp + 2*labelSpace);
-				ctx.ShowText ($"reducedLH:{reducedLH}");
+				ctx.ShowText ($"reducedLH:{rlh<lh}");
 				ctx.MoveTo (Points[i+1] + lp + 3*labelSpace);
 				ctx.ShowText ($"x:{x:0.0000}");
 				ctx.MoveTo (Points[i+1] + lp + 4*labelSpace);

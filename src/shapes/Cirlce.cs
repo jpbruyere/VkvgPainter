@@ -77,7 +77,7 @@ namespace VkvgPainter
 			//if (StartAngle < ea)
 			if (Points.Count > 2) {
 				ctx.MoveTo (p0);
-				ctx.LineTo (Points[1]);
+				//ctx.LineTo (Points[1]);
 				ctx.Arc (p0.X, p0.Y, r, sa, ea);
 				ctx.ClosePath();
 			}else
