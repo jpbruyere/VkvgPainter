@@ -77,6 +77,9 @@ namespace VkvgPainter
 			}
 		}
 		public override bool HasStroke => strokeColor != null;
+		public override bool HasFill => fillColor != null;
+		public override void SetStrokeAsSource (vkvg.Context ctx) => strokeColor.SetAsSource (ctx);
+		public override void SetFillAsSource (vkvg.Context ctx) => fillColor.SetAsSource (ctx);
 		public override bool EnableDash {
 			get => enableDash;
 			set {
@@ -137,19 +140,19 @@ namespace VkvgPainter
 		}
 
 		public override void EmitDraw (Context ctx) {
-			if (fillColor == null) {
-				if (strokeColor == null)
+			if (!HasFill) {
+				if (!HasStroke)
 					return;
-				strokeColor.SetAsSource (ctx);
+				SetStrokeAsSource (ctx);
 				ctx.Stroke ();
 				return;
 			}
-			fillColor.SetAsSource (ctx);
-			if (strokeColor == null)
+			SetFillAsSource (ctx);
+			if (!HasStroke)
 				ctx.Fill ();
 			else {
 				ctx.FillPreserve ();
-				strokeColor.SetAsSource (ctx);
+				SetStrokeAsSource (ctx);
 				ctx.Stroke ();
 			}
 		}

@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="vkCrowWindow" Version="0.3.9" />
+    <PackageReference Include="vkCrowWindow" Version="0.3.10" />
     <PackageReference Include="vkvg.net" Version="0.4.0-beta" />
     <PackageReference Include="OpenTK.Mathematics" Version="4.6.7" />
   </ItemGroup>

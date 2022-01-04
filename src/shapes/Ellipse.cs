@@ -11,6 +11,34 @@ namespace VkvgPainter
 	public class Ellipse : Shape
 	{
 		static double minLenght = 2;
+
+		void bezierEllipse (vkvg.Context ctx, double radiusX, double radiusY, double x, double y, double rotationAngle = 0.0) {
+			double width_two_thirds = radiusX * 4 / 3;
+
+			double dx1 = Math.Sin(rotationAngle) * radiusY;
+			double dy1 = Math.Cos(rotationAngle) * radiusY;
+			double dx2 = Math.Cos(rotationAngle) * width_two_thirds;
+			double dy2 = Math.Sin(rotationAngle) * width_two_thirds;
+
+			double topCenterX = x - dx1;
+			double topCenterY = y + dy1;
+			double topRightX = topCenterX + dx2;
+			double topRightY = topCenterY + dy2;
+			double topLeftX = topCenterX - dx2;
+			double topLeftY = topCenterY - dy2;
+
+			double bottomCenterX = x + dx1;
+			double bottomCenterY = y - dy1;
+			double bottomRightX = bottomCenterX + dx2;
+			double bottomRightY = bottomCenterY + dy2;
+			double bottomLeftX = bottomCenterX - dx2;
+			double bottomLeftY = bottomCenterY - dy2;
+
+			ctx.MoveTo(bottomCenterX, bottomCenterY);
+			ctx.CurveTo(bottomRightX, bottomRightY, topRightX, topRightY, topCenterX, topCenterY);
+			ctx.CurveTo(topLeftX, topLeftY, bottomLeftX, bottomLeftY, bottomCenterX, bottomCenterY);
+			ctx.ClosePath();
+		}
 		void midptellipse (vkvg.Context ctx, double rx, double ry, double xc, double yc)
 		{
 			List<PointD>[] pts = new List<PointD>[4] {
@@ -143,7 +171,8 @@ namespace VkvgPainter
 		public override void EmitPath(Context ctx, PointD? mouse = null)
 		{
 			PointD radii = (mouse.HasValue ? mouse.Value: Points[1]) - Points[0];
-			midptellipse (ctx, Math.Abs (radii.X), Math.Abs (radii.Y), Points[0].X, Points[0].Y);
+			//midptellipse (ctx, Math.Abs (radii.X), Math.Abs (radii.Y), Points[0].X, Points[0].Y);
+			bezierEllipse (ctx, Math.Abs (radii.X), Math.Abs (radii.Y), Points[0].X, Points[0].Y);
 		}
 	}
 }

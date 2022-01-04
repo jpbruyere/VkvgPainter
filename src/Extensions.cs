@@ -16,6 +16,21 @@ namespace VkvgPainter
 		public static Vector2d ToVector2d (this PointD v) => new Vector2d (v.X, v.Y);
 		public static double Det (this Vector2d a, Vector2d b) => a.X * b.Y - a.Y * b.X;
 		public static Vector2d Perp (this Vector2d a) => new Vector2d (a.Y, -a.X);
+		public static RectangleD Union (this RectangleD r, RectangleD s) {
+			RectangleD tmp = default;
+			tmp.Left = Math.Min (r.Left, s.Left);
+			tmp.Top = Math.Min (r.Top, s.Top);
+			if (r.Right > s.Right)
+				tmp.Width = r.Right - tmp.Left;
+			else
+				tmp.Width = s.Right - tmp.Left;
+			if (r.Bottom > s.Bottom)
+				tmp.Height = r.Bottom - tmp.Top;
+			else
+				tmp.Height = s.Bottom - tmp.Top;
+
+			return tmp;
+		}
 		public static void SetAsSource (this Fill f, vkvg.Context ctx, Rectangle bounds = default (Rectangle)) {
 			if (f is SolidColor sc)
 				sc.SetAsSource (ctx, bounds);

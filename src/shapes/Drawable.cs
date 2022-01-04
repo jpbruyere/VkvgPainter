@@ -29,6 +29,9 @@ namespace VkvgPainter
 		public abstract Drawing2D.Color FillColor { get; set; }
 		public abstract Drawing2D.Color StrokeColor { get; set; }
 		public abstract bool HasStroke  { get; }
+		public abstract bool HasFill  { get; }
+		public abstract void SetStrokeAsSource (vkvg.Context ctx);
+		public abstract void SetFillAsSource (vkvg.Context ctx);
 		public abstract bool EnableDash { get; set; }
 		public abstract ObservableList<ValueContainer<float>> Dashes { get; set; }
 		public abstract Drawing2D.RectangleD GetExtents (Context ctx);
@@ -44,7 +47,7 @@ namespace VkvgPainter
 			ctx.Rectangle (rr.X, rr.Y, rr.Width, rr.Height);
 			ctx.SetSource (r,g,b);
 			ctx.Dashes = new float[] {2,4};
-			ctx.LineWidth = 1;
+			ctx.LineWidth = 2;
 			ctx.Stroke();
 			ctx.Dashes = null;
 		}
