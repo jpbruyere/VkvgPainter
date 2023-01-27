@@ -13,7 +13,7 @@ namespace VkvgPainter
 		{
 			base.initVulkan();
 
-			vkvgDev = new vkvg.Device (instance.Handle, phy.Handle, dev.VkDev.Handle, presentQueue.qFamIndex, vkvg.SampleCount.Sample_8);
+			vkvgDev = new vkvg.Device (instance.Handle, phy.Handle, dev.VkDev.Handle, presentQueue.qFamIndex, Drawing2D.SampleCount.Sample_8);
 		}
 
 		public int CrowUpdateInterval {

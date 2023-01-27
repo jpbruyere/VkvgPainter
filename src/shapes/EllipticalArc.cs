@@ -102,7 +102,11 @@ namespace VkvgPainter
 
 		public override void EmitPath(Context ctx, PointD? mouse = null)
 		{
-			ctx.DrawEllipticArc (Points[0].X, Points[0].Y, Points[1].X, Points[1].Y, largeArc, clockwise, Points[2].X, Points[2].Y, angle);
+			if (Points[2].X == 0 || Points[2].Y == 0) {
+				ctx.MoveTo (Points[0]);
+				ctx.LineTo (Points[1]);
+			} else
+				ctx.DrawEllipticArc (Points[0].X, Points[0].Y, Points[1].X, Points[1].Y, largeArc, clockwise, Points[2].X, Points[2].Y, angle);
 		}
 	}
 }

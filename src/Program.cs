@@ -5,6 +5,7 @@ using vke;
 using Vulkan;
 using System.Linq;
 using Drawing2D;
+using System.IO;
 
 namespace VkvgPainter
 {
@@ -32,6 +33,8 @@ namespace VkvgPainter
 		}
 		public List<Drawable> Shapes = new List<Drawable> ();
 		public List<Drawable> SelectedShapes = new List<Drawable> ();
+		public vkvg.Recording recording = null;
+
 
 		DrawMode currentDrawMode = DrawMode.Select;
 		Drawable currentShape, hoverShape;
@@ -64,6 +67,15 @@ namespace VkvgPainter
 					return;
 				currentShape = value;
 				NotifyValueChanged ("CurrentShape", currentShape);
+				if (currentShape is BezierTest)
+					loadWindow ("#ui.BezierTest.crow").DataSource = currentShape;
+				else {
+					closeWindow ("#ui.BezierTest.crow");
+					if (currentShape is PathTest)
+						loadWindow ("#ui.PathTest.crow").DataSource = currentShape;
+					else
+						closeWindow ("#ui.PathTest.crow");
+				}
 				redraw = true;
 			}
 		}
@@ -106,19 +118,20 @@ namespace VkvgPainter
 
 			loadWindow ("#ui.HelloWorld.crow", this);
 		}
+
+		public bool SnapToGrid = true;
+		public int GridStep = 20;
 		void drawGrid (vkvg.Context ctx) {
 			ctx.Clear();
 			ctx.SetSource (1,1,1);
 			ctx.Paint();
 			ctx.SetSource (0.8,0.8,1);
 
-			int step = 20;
-
-			for (int x = step; x < this.Width; x+=step)	{
+			for (int x = GridStep; x < this.Width; x+=GridStep)	{
 				ctx.MoveTo (-0.5f + x, 0);
 				ctx.LineTo (-0.5f + x, Height);
 			}
-			for (int y = step; y < this.Height; y+=step)	{
+			for (int y = GridStep; y < this.Height; y+=GridStep)	{
 				ctx.MoveTo (0, -0.5f + y);
 				ctx.LineTo (Width, -0.5f + y);
 			}
@@ -127,10 +140,32 @@ namespace VkvgPainter
 
 		}
 
+		vkvg.SvgHandle svgHandle = null;
+
+		void _draw (vkvg.Context ctx) {
+			if (svgHandle != null) {
+				if (!string.IsNullOrEmpty(renderSvgSub))
+					svgHandle.Render (ctx, renderSvgSub);
+				else
+					svgHandle.Render (ctx);
+			}
+
+			foreach (Drawable shape in Shapes)
+				shape.draw_internal (ctx);
+		}
 		public override void Update()
 		{
 			base.Update();
 
+			if (record) {
+				recording?.Dispose();
+				using (vkvg.Context ctx = new vkvg.Context(vkvgSurf)) {
+					ctx.StartRecording();
+					_draw (ctx);
+					recording = ctx.StopRecording ();
+				}
+				record = false;
+			}
 			if (redraw) {
 				redraw = false;
 				using (vkvg.Context ctx = new vkvg.Context(vkvgSurf))
@@ -139,8 +174,10 @@ namespace VkvgPainter
 
 					drawGrid (ctx);
 
-					foreach (Drawable shape in Shapes)
-						shape.draw_internal (ctx);
+					if (recording != null && replay)
+						ctx.Replay (recording);
+					else
+						_draw (ctx);
 
 					if (newShape != null) {
 						newShape.draw_internal (ctx, mousePos);
@@ -163,8 +200,14 @@ namespace VkvgPainter
 			}
 		}
 		PointD? mousePos;
-		internal static volatile bool redraw = true;
-
+		internal static volatile bool redraw = true, record = false, replay = false;
+		void snapCoord (ref double coord) {
+			double mod = coord % 20.0;
+			if (mod > GridStep/2)
+				coord += GridStep - mod;
+			else
+				coord -= mod;
+		}
 		protected override void onMouseButtonDown(MouseButton button, Modifier mods)
 		{
 			base.onMouseButtonDown(button, mods);
@@ -219,24 +262,29 @@ namespace VkvgPainter
 					if (button == MouseButton.Right) {
 						CurrentDrawMode = DrawMode.Select;
 					} else {
+						PointD m = mousePos.Value;
+						if (SnapToGrid) {
+							snapCoord (ref m.X);
+							snapCoord (ref m.Y);
+						}
 						switch (currentDrawMode) {
 							case DrawMode.Rect:
-								newShape = new Rectangle (mousePos.Value);
+								newShape = new Rectangle (m);
 								break;
 							case DrawMode.Circle:
-								newShape = new Circle (mousePos.Value);
+								newShape = new Circle (m);
 								break;
 							case DrawMode.Ellipse:
-								newShape = new Ellipse (mousePos.Value);
+								newShape = new Ellipse (m);
 								break;
 							case DrawMode.Lines:
-								newShape = new Path (mousePos.Value);
+								newShape = new Path (m);
 								break;
 							case DrawMode.PathTest:
-								newShape = new PathTest (mousePos.Value);
+								newShape = new PathTest (m);
 								break;
 							case DrawMode.Bezier:
-								newShape = new Bezier (mousePos.Value);
+								newShape = new BezierTest (m);
 								break;
 							case DrawMode.Quadratic:
 								//newShape = new Quadratic (mousePos.Value);
@@ -251,7 +299,7 @@ namespace VkvgPainter
 								ea.AddPoint (mousePos.Value + new PointD (30,40));
 								Shapes.Add (ea);*/
 								//newShape = new CenteredEllipseArc (mousePos.Value);
-								EllipticalArc ea = new EllipticalArc (mousePos.Value);
+								EllipticalArc ea = new EllipticalArc (m);
 								Shapes.Add (ea);
 								loadWindow ("#ui.EllipticArc.crow").DataSource = ea;
 								break;
@@ -270,7 +318,13 @@ namespace VkvgPainter
 			if (MouseIsInInterface || newShape == null)
 				return;
 
-			if (newShape.OnCreateMouseUp (button, mousePos.Value))
+			PointD m = mousePos.Value;
+			if (SnapToGrid) {
+				snapCoord (ref m.X);
+				snapCoord (ref m.Y);
+			}
+
+			if (newShape.OnCreateMouseUp (button, m))
 				finishCurrentShape ();
 
 			redraw = true;
@@ -301,11 +355,16 @@ namespace VkvgPainter
 			if (currentDrawMode == DrawMode.Select) {
 				if (this.GetButton (MouseButton.Left) == InputAction.Press) {
 					if (currentShape != null) {
+						PointD m = mousePos.Value - lastM;
+						/*if (SnapToGrid) {
+							snapCoord (ref m.X);
+							snapCoord (ref m.Y);
+						}*/
 						if (SelectedShapes.Count > 0) {
 							foreach (Drawable shape in SelectedShapes)
-								shape.Move (mousePos.Value - lastM);
+								shape.Move (m);
 						} else
-							currentShape.Move (mousePos.Value - lastM);
+							currentShape.Move (m);
 						redraw = true;
 					}
 				} else if (this.GetButton (MouseButton.Right) == InputAction.Press) {
@@ -362,15 +421,97 @@ namespace VkvgPainter
 					redraw = true;
 				}
 				break;
+			case Key.KeypadAdd:
+				if (currentShape is PathTest pt) {
+					pt.CurrentTriangle++;
+					redraw = true;
+				}
+				break;
+			case Key.KeypadSubtract:
+				if (currentShape is PathTest ptt && ptt.CurrentTriangle > -1) {
+					ptt.CurrentTriangle--;
+					redraw = true;
+				}
+				break;
+			case Key.R:
+				record = true;
+				break;
+			case Key.F2:
+				replay = !replay;
+				redraw = true;
+				break;
+			case Key.F3:
+				loadWindow ("#ui.Explorer.crow", this);
+				break;
 			default:
 				base.onKeyDown(key, scanCode, modifiers);
 				break;
 			}
 		}
+		public string CurrentDir {
+			get => Crow.Configuration.Global.Get<string> (nameof (CurrentDir));
+			set {
+				if (CurrentDir == value)
+					return;
+				Crow.Configuration.Global.Set (nameof (CurrentDir), value);
+				NotifyValueChanged (CurrentDir);
+			}
+		}
+		public string CurrentFile {
+			get => Crow.Configuration.Global.Get<string> (nameof (CurrentFile));
+			set {
+				if (CurrentFile == value)
+					return;
+				Crow.Configuration.Global.Set (nameof (CurrentFile), value);
+				NotifyValueChanged (CurrentFile);
+
+				svgHandle?.Dispose();
+				svgHandle = new vkvg.SvgHandle(vkvgDev, CurrentFile);
+			}
+		}
+		string renderSvgSub;
+		public string RenderSvgSub {
+			get => renderSvgSub;
+			set {
+				if (renderSvgSub == value)
+					return;
+				renderSvgSub = value;
+				NotifyValueChanged (renderSvgSub);
+				redraw = true;
+			}
+		}
+		public void goUpDirClick (object sender, Crow.MouseButtonEventArgs e)
+		{
+			if (string.IsNullOrEmpty (CurrentDir))
+				return;
+			string root = Directory.GetDirectoryRoot (CurrentDir);
+			if (CurrentDir == root)
+				return;
+			CurrentDir = Directory.GetParent (CurrentDir).FullName;
+		}
+		protected void Dv_SelectedItemChanged (object sender, Crow.SelectionChangeEventArgs e)
+		{
+			FileSystemInfo fi = e.NewValue as FileSystemInfo;
+			if (fi == null)
+				return;
+			if (fi is DirectoryInfo)
+				return;
+			if (string.Equals (fi.Extension, ".svg", StringComparison.OrdinalIgnoreCase))
+				CurrentFile = fi.FullName;
+			redraw = true;
+		}
+
+
+
 		protected override void OnResize()
 		{
 			base.OnResize();
 			redraw = true;
+		}
+		protected override void Dispose(bool disposing)
+		{
+			recording?.Dispose();
+			base.Dispose(disposing);
 		}
 	}
 }

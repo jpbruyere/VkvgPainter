@@ -1,0 +1,3 @@
+[submodule "external/vkvg.net"]
+	path = external/vkvg.net
+	url = git@github.com:jpbruyere/vkvg.net.git

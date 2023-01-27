@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="vkCrowWindow" Version="0.3.10" />
-    <PackageReference Include="vkvg.net" Version="0.4.0-beta" />
+    <ProjectReference Include="external/vkvg.net/vkvg.net/vkvg.net.csproj" />
     <PackageReference Include="OpenTK.Mathematics" Version="4.6.7" />
   </ItemGroup>
 

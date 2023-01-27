@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Window Caption="Bezier Params" Background="DarkGrey" Width="600" Height="Fit" HorizontalAlignment="Right" VerticalAlignment="Top" >
+	<VerticalStack Margin="1" Spacing="2">
+		<CheckBox Caption="Stroke Mode" IsChecked="{²StrokeMode}"/>
+
+	</VerticalStack>
+</Window>

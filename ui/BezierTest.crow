@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Window Caption="Bezier Params" Background="DarkGrey" Width="600" Height="Fit" HorizontalAlignment="Right" VerticalAlignment="Top" >
+	<VerticalStack Margin="1" Spacing="2">
+		<HorizontalStack Height="Fit" Width="Stretched">
+			<Label Width="40%" Text="ApproximationScale"/>
+			<TextBox Text="{²ApproximationScale}"/>
+		</HorizontalStack>
+		<Slider Value="{²ApproximationScale}" Decimals="3" Minimum="0" Maximum="1" SmallIncrement="0.001" LargeIncrement="0.001"/>
+		<HorizontalStack Height="Fit" Width="Stretched">
+			<Label Width="40%" Text="AngleTolerance"/>
+			<TextBox Text="{²AngleTolerance}"/>
+		</HorizontalStack>
+		<Slider Value="{²AngleTolerance}" Decimals="3" Minimum="0" Maximum="1" SmallIncrement="0.001" LargeIncrement="0.001"/>
+		<HorizontalStack Height="Fit" Width="Stretched">
+			<Label Width="40%" Text="CupsLimit"/>
+			<TextBox Text="{²CupsLimit}"/>
+		</HorizontalStack>
+		<Slider Value="{²CupsLimit}" Decimals="3" Minimum="0" Maximum="1" SmallIncrement="0.001" LargeIncrement="0.001"/>
+		<HorizontalStack Height="Fit" Width="Stretched">
+			<Label Width="40%" Text="CollinearityEpsilon"/>
+			<TextBox Text="{²CollinearityEpsilon}"/>
+		</HorizontalStack>
+		<Slider Value="{²CollinearityEpsilon}" Decimals="3" Minimum="0" Maximum="1" SmallIncrement="0.001" LargeIncrement="0.001"/>
+		<HorizontalStack Height="Fit" Width="Stretched">
+			<Label Width="40%" Text="AngleToleranceEpsilon"/>
+			<TextBox Text="{²AngleToleranceEpsilon}"/>
+		</HorizontalStack>
+		<Slider Value="{²AngleToleranceEpsilon}" Decimals="3" Minimum="0" Maximum="1" SmallIncrement="0.001" LargeIncrement="0.001"/>
+		<HorizontalStack Height="Fit" Width="Stretched">
+			<Label Width="40%" Text="DistanceTolerance"/>
+			<TextBox Text="{²DistanceTolerance}"/>
+		</HorizontalStack>
+		<Slider Value="{²DistanceTolerance}" Decimals="4" Minimum="0" Maximum="1" SmallIncrement="0.0001" LargeIncrement="0.0001"/>
+	</VerticalStack>
+</Window>

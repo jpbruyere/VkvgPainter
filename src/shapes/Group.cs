@@ -34,7 +34,7 @@ namespace VkvgPainter
 					NotifyValueChanged (value);
 			}
 		}
-		public override vkvg.LineJoin LineJoin {
+		public override LineJoin LineJoin {
 			get => Elements[0].LineJoin;
 			set {
 				foreach (Drawable d in Elements)
@@ -43,7 +43,7 @@ namespace VkvgPainter
 					NotifyValueChanged (value);
 			}
 		}
-		public override vkvg.LineCap LineCap {
+		public override LineCap LineCap {
 			get => Elements[0].LineCap;
 			set {
 				foreach (Drawable d in Elements)
@@ -147,7 +147,7 @@ namespace VkvgPainter
 
 
 		internal override void draw_internal (Context ctx, PointD? mouse = null) {
-			ctx.FillRule = vkvg.FillRule.NonZero;
+			ctx.FillRule = FillRule.NonZero;
 
 			if (EnableDash && Dashes.Count > 0)
 				ctx.Dashes = Dashes.Select (d => d.Value).ToArray ();
